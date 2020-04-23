@@ -1,62 +1,93 @@
-
-/// It is basic LCA problem ,it can be solved by sparse table ,segment tree .etc...
-/// Time-0.22s
-
 #include <bits/stdc++.h>
 
 #define fast ios_base::sync_with_stdio(0);cin.tie(0);
 
 using namespace std;
 
-const int MAXN=200002;
-int sparse[MAXN][22];
+const int MAXN=100001;
+int sparse[MAXN][20];
 int lg[MAXN];
-int  V[MAXN+1]={0}, E[2*MAXN]={0}, Lev[2*MAXN]={0}, trav_num[MAXN+1]={0}, P[MAXN+1]={-1}, K=0;
+int  Lev[2*MAXN]={0},par[MAXN+1]={-1}, K=0;
 bool disc[MAXN];
+int Maxlog;
 
 vector<int> graph[MAXN];
 
-void SparseTable(int N) {
+ void buildsparsetable(int N)
+{
+      int i, j;
 
-		for (int j = 1; 1 << j <= N; j++) {
-		    for (int i = 0; i + (1 << j) - 1 < N; i++) {
-		        if (Lev[sparse[i][j - 1]] < Lev[sparse[i + (1 << (j - 1))][j - 1]]) {
-		            sparse[i][j] = sparse[i][j - 1];
-		        } else {
-		            sparse[i][j] = sparse[i + (1 << (j - 1))][j - 1];
-		        }
-		    }
-		}
+    for (i = 0; i < N; i++){
+    for (j = 0; 1 << j < N; j++){
+    sparse[i][j] = -1;/// initialize with -1, that means there is no ancestor of i node
+    }
+    }
+    for (i = 0; i < N; i++){
+    sparse[i][0] = par[i];
+    /// initialize all node i ,for 2^0 (=1) th ancestor of i ,that is obviously ith parent
+    }
+    ///bottom up dynamic programing
+    for (j = 1; 1 << j < N; j++)
+    {
+        for (i = 0; i < N; i++)
+        {
+            if (sparse[i][j - 1] != -1)/// if 2^(j-1) th ancestor of ith node is available then proceed
+                    sparse[i][j] = sparse[sparse[i][j - 1]][j - 1];///for first one,sparse[i][j-1] for 2^j-1 ,so for 2^j-1 *2^j-1=2^j , sparse[i][j] means 2^j the ancestor found
+        }
 
-	}
- int mn_query(int i, int j) {
-        int k = log2(j - i + 1);
-        if(Lev[ sparse[i][k] ] <= Lev[ sparse[j - (1<<k) + 1][k] ]) { return sparse[i][k]; }
-        else { return sparse[j - (1<<k) + 1][k]; }
     }
 
-    /// It is for finding level number and traversing and keeping those dfs number by trav_num array
+}
 
-void dfs(int v, int d, int &k) {
-    trav_num[v] = k;
-    E[k] = v;
-    Lev[k++] = d;
-    disc[v]=true;
-    for(int i=0;i<graph[v].size();i++) {
-    	int u = graph[v][i];/// u, child of v
-        if (!disc[u]) {
-            P[u] = v;
-            dfs(u, d+1, k);
-            E[k] = v;
-            Lev[k++] = d;
+
+    int lca(int a, int b)
+    {
+
+        if(Lev[a]>Lev[b]) {swap(a,b);}
+
+        int dif_between_lev=Lev[b]-Lev[a];
+        /// we have to find out the same level of a which is also ancestor of b
+        while(dif_between_lev>0) /// if difference between b and a is above zero , we can reduce it by binary lifting
+        {
+            int max_mum_power_of_i=log2(dif_between_lev);
+            b=sparse[b][max_mum_power_of_i];
+            dif_between_lev-=(1<<max_mum_power_of_i);
         }
+        if(b==a) return b;/// if a is itself ancestor of a and b
+
+ ///Now,two are on same level,so trying to reduce the level  just before that ancestor node
+        for(int i=Maxlog;i>=0;i--)
+        {
+            if(sparse[a][i]!=-1 && sparse[a][i]!=sparse[b][i])
+            {
+                a=sparse[a][i];
+                b=sparse[b][i];
+            }
+        }
+        return par[a];/// sparse[a][0] , now print the just parent of this node
+    }
+
+    ///
+void dfs(int v , int parent , int lvl)
+{
+    Lev[v] = lvl ;
+    int i , sz = graph[v].size();
+    int  u ;
+    disc[v] = true;
+    for ( i = 0 ; i < sz ; i++ )
+    {
+        u = graph[v][i];
+        if( disc[u]) continue;
+        par[u]=v;
+        ///cout<<v<<" "<<parent<<endl;
+        ///dist[u]=dist[v]+
+        dfs(u,v,lvl+1);
     }
 }
 void init_search(int N) {for(int i=0;i<=N;i++) { disc[i]=false;graph[i].clear();} }
 
 int main() {
     fast;
-    for(int i=2;i<MAXN;i++) lg[i]=lg[i>>1]+1;
     int tc,caso=1;
     cin>>tc;
     while(tc--)
@@ -75,22 +106,19 @@ int main() {
         graph[y].push_back(x);
         }
     }
-    K=0;
-    dfs(1, 1, K); //tree is rooted at 1
-    int n=2*N;
-    for(int i=0;i<n; i++) { sparse[i][0] = i; }
-    SparseTable(n);
+    par[1]=-1;
+    dfs(1, -1, 0); //tree is rooted at 1
+    Maxlog=(int)(ceil)(log2(N+1));
+    buildsparsetable(N+1);
     cout<<"Case "<<caso<<":"<<endl;
     int q;
     cin>>q;
-    /// Per query we have to find out the index of minimum lev's index of the range of trav_num of l and r
-    /// Then according to that minimum level's index we will print out E[i] ,which will be our answer
     while(q--)
     {
     int l, r;
     cin>>l>>r;
-    int lca = E[mn_query(min(trav_num[l], trav_num[r]), max(trav_num[l], trav_num[r]) )];
-    cout<<lca<<endl;
+    int Lca = lca(l,r);
+    cout<<Lca<<endl;
     }
     caso++;
     }

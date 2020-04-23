@@ -1,3 +1,8 @@
+
+/// Time - 0.26s
+/// Sparse Table and LCA with binary lifting technique 
+
+
 #include <bits/stdc++.h>
 
 #define fast ios_base::sync_with_stdio(0);cin.tie(0);

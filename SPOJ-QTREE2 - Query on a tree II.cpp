@@ -167,8 +167,6 @@ int main() {
         else if(command=="DIST")
         {
             cin>>a>>b;
-        /// here two cases when either a or b itself is lca of a and b ,then distance is just distance between their dist array as they are on same path
-        /// when structure is like a---------(lca)-------------b,then
         ll distance;
         lca=lca_query(a,b);
         distance=dist[a]+dist[b]-2ll*dist[lca];

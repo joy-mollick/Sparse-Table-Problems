@@ -116,16 +116,6 @@ vector< pair<int,ll> > graph[MAXN];
             desire_jump-=(1<<max_mum_power_of_i);
         }
         return a;
-        /*
-        int log;
-        for(log=1;(1<<log)<=Lev[a];log++);
-               log--;
-        k--;
-      for(int i=log;i>=0;i--) if((1<<i) <= k) {
-          a = sparse[a][i];
-              k -= (1<<i);
-              }
-          return a;*/
     }
 
     ///

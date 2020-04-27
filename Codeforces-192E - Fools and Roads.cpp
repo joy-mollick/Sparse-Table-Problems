@@ -88,7 +88,7 @@ vector< pair<int,int> >edge;
 
 void dfs(int v,int parent,int lvl)
 {
-    num_of_child_of_this_node[v]=1;
+    ///num_of_child_of_this_node[v]=1;
     Lev[v] = lvl ;
     int i , sz = graph[v].size();
     int  u ;
@@ -100,13 +100,12 @@ void dfs(int v,int parent,int lvl)
         u = graph[v][i];
         if( disc[u]) continue;
         dfs(u,v,lvl+1);
-        num_of_child_of_this_node[v]+=num_of_child_of_this_node[u];
+       /// num_of_child_of_this_node[v]+=num_of_child_of_this_node[u];
     }
 }
-
+/// Calculation of how many times each node visited from its subtree 
 void DFS(int v)
 {
-    ///nmber_of_times_visited_this_node[v]=1ll;
     vis[v]=true;
     int u,i,sz=graph[v].size();
     for(i=0;i<sz;i++)
